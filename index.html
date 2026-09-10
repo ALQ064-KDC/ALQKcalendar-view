@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>備品貸出カレンダー（閲覧専用）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F4;
+    --surface:#FFFFFF;
+    --ink:#1C2530;
+    --muted:#5B6B7A;
+    --border:#D7DEE5;
+    --accent:#2F6F5E;
+    --accent-soft:#E4F0EC;
+    --warn:#C08A2E;
+    --warn-soft:#FBF1DD;
+    --success:#2F7A4F;
+    --success-soft:#E4F1E9;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(28,37,48,.06), 0 4px 16px rgba(28,37,48,.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans JP", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:"Zen Kaku Gothic New", sans-serif; letter-spacing:.01em; }
+  #app{ max-width:900px; margin:0 auto; padding:24px 16px 60px; }
+
+  header.top{ padding:8px 0 20px; }
+  header.top h1{ font-size:19px; margin:0 0 4px; font-weight:900; }
+  header.top p{ margin:0; color:var(--muted); font-size:12.5px; }
+  header.top .notice{
+    margin-top:10px; background:var(--accent-soft); color:var(--accent); border-radius:8px;
+    padding:8px 12px; font-size:12px; font-weight:700;
+  }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:20px; box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .cal-head .month-label{ font-size:18px; font-weight:900; font-family:"Zen Kaku Gothic New"; }
+  .cal-nav{ display:flex; gap:6px; }
+  button.btn{
+    font-family:"Zen Kaku Gothic New"; font-weight:700; font-size:13px; border-radius:8px; border:1px solid var(--ink);
+    background:var(--ink); color:#fff; padding:8px 14px; cursor:pointer;
+  }
+  button.btn.ghost{ background:transparent; color:var(--ink); }
+  button.btn:hover{ opacity:.85; }
+
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-dow{ text-align:center; font-size:11px; color:var(--muted); font-weight:700; padding-bottom:4px; }
+  .cal-cell{
+    min-height:78px; border:1px solid var(--border); border-radius:8px; padding:6px; background:var(--bg);
+    display:flex; flex-direction:column; gap:4px; cursor:pointer;
+  }
+  .cal-cell:hover{ border-color:var(--accent); }
+  .cal-cell.empty{ background:transparent; border:1px dashed var(--border); cursor:default; }
+  .cal-cell.today{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+  .cal-cell .d{ font-size:11.5px; font-weight:700; color:var(--muted); }
+  .cal-cell.today .d{ color:var(--accent); }
+  .ev{ font-size:10px; padding:2px 5px; border-radius:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; }
+  .ev.out{ background:#E8720C; color:#fff; }
+  .ev.done{ background:#9AA5AE; color:#fff; }
+
+  .empty-state{ color:var(--muted); font-size:12.5px; padding:20px 0; text-align:center; }
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(28,37,48,.5); display:flex; align-items:center; justify-content:center;
+    padding:20px; z-index:50;
+  }
+  .modal{
+    background:#fff; border-radius:14px; max-width:440px; width:100%; padding:22px; position:relative;
+    max-height:80vh; overflow-y:auto;
+  }
+  .modal h3{ margin:0 0 14px; font-size:16px; }
+  .modal-close{
+    position:absolute; top:12px; right:14px; border:none; background:none; font-size:18px; cursor:pointer; color:var(--muted);
+  }
+  .record-card{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:12.5px; }
+  .status-pill{ padding:3px 9px; border-radius:99px; font-size:11px; font-weight:700; }
+  .status-pill.out{ background:var(--warn-soft); color:var(--warn); }
+  .status-pill.in{ background:var(--success-soft); color:var(--success); }
+  .mono{ font-family:monospace; font-weight:700; }
+  .hidden{ display:none !important; }
+  footer{ text-align:center; color:var(--muted); font-size:11px; margin-top:20px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <h1>備品貸出カレンダー（閲覧専用）</h1>
+    <p>社内備品貸出管理システムのカレンダーを、社外からも確認できるように反映したものです。</p>
+    <div class="notice" id="updated-notice">読み込み中...</div>
+  </header>
+
+  <div class="panel">
+    <div class="cal-head">
+      <div class="month-label" id="cal-month-label"></div>
+      <div class="cal-nav">
+        <button class="btn ghost" id="cal-prev">← 前月</button>
+        <button class="btn ghost" id="cal-today">今月</button>
+        <button class="btn ghost" id="cal-next">次月 →</button>
+      </div>
+    </div>
+    <div id="cal-body"></div>
+  </div>
+
+  <footer>このページは自動反映される閲覧専用ページです。編集・登録はできません。</footer>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+let records = [];
+let generatedAt = null;
+let calView = (() => {
+  const t = new Date();
+  return { y: t.getFullYear(), m: t.getMonth() };
+})();
+
+function todayStr(){
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+function isoAddDays(iso, days){
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  const yy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+}
+
+function fmtDate(iso){
+  if(!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${y}/${m}/${d}`;
+}
+
+function fmtDateTime(iso){
+  try{
+    const d = new Date(iso);
+    return d.toLocaleString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  }catch(e){ return iso; }
+}
+
+function buildEventsByDay(){
+  const eventsByDay = {};
+  records.forEach(r=>{
+    if(!r.loanDate) return;
+    const start = r.loanDate;
+    const end = r.returnDate || r.loanDate;
+    let cur = start;
+    let guard = 0;
+    while(cur <= end && guard < 400){
+      (eventsByDay[cur] ||= []).push(r);
+      cur = isoAddDays(cur, 1);
+      guard++;
+    }
+  });
+  return eventsByDay;
+}
+
+function renderCalendar(){
+  document.getElementById('cal-month-label').textContent = `${calView.y}年 ${calView.m+1}月`;
+  const body = document.getElementById('cal-body');
+  const { y, m } = calView;
+  const first = new Date(y, m, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayIso = todayStr();
+  const eventsByDay = buildEventsByDay();
+
+  const cells = [];
+  for(let i=0;i<startDow;i++) cells.push(null);
+  for(let d=1; d<=daysInMonth; d++) cells.push(d);
+
+  body.innerHTML = `
+    <p style="color:var(--muted);font-size:12px;margin:-6px 0 12px;">日付をクリックすると、その日の貸出状況を確認できます</p>
+    <div class="cal-grid">
+      ${['日','月','火','水','木','金','土'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+      ${cells.map(d=>{
+        if(!d) return `<div class="cal-cell empty"></div>`;
+        const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const evs = eventsByDay[iso] || [];
+        const isToday = iso===todayIso;
+        let summaryHtml = '';
+        if(evs.length){
+          const outCount = evs.filter(e=>e.status==='貸出中').length;
+          const doneCount = evs.length - outCount;
+          if(outCount) summaryHtml += `<div class="ev out">貸出中 ${outCount}点</div>`;
+          if(doneCount) summaryHtml += `<div class="ev done">回収済 ${doneCount}点</div>`;
+        }
+        return `<div class="cal-cell ${isToday?'today':''}" data-date="${iso}">
+          <div class="d">${d}</div>
+          ${summaryHtml}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  body.querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
+    cell.addEventListener('click', ()=>{
+      const iso = cell.dataset.date;
+      const evs = eventsByDay[iso] || [];
+      document.getElementById('modal-root').innerHTML = `
+        <div class="overlay"><div class="modal">
+          <button class="modal-close" id="m-close">×</button>
+          <h3>${fmtDate(iso)} の貸出状況</h3>
+          ${evs.length ? evs.map(r=>`
+            <div class="record-card">
+              <span class="status-pill ${r.status==='貸出中'?'out':'in'}">${r.status||'—'}</span>
+              <div class="mono" style="margin-top:6px;">${r.equipmentNo||'—'} ／ ${r.category||'—'}</div>
+              <div style="color:var(--muted);margin-top:4px;">貸出日：${fmtDate(r.loanDate)} ～ 回収予定日：${fmtDate(r.returnDate)}</div>
+            </div>
+          `).join('') : `<div class="empty-state">この日の貸出予定はありません</div>`}
+        </div></div>
+      `;
+      document.getElementById('m-close').addEventListener('click', ()=>{
+        document.getElementById('modal-root').innerHTML = '';
+      });
+    });
+  });
+}
+
+document.getElementById('cal-prev').addEventListener('click', ()=>{
+  calView.m--; if(calView.m<0){ calView.m=11; calView.y--; } renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', ()=>{
+  calView.m++; if(calView.m>11){ calView.m=0; calView.y++; } renderCalendar();
+});
+document.getElementById('cal-today').addEventListener('click', ()=>{
+  const t = new Date(); calView = { y:t.getFullYear(), m:t.getMonth() }; renderCalendar();
+});
+document.getElementById('modal-root').addEventListener('click', (e)=>{
+  if(e.target.classList.contains('overlay')) document.getElementById('modal-root').innerHTML = '';
+});
+
+async function init(){
+  try{
+    const res = await fetch('./data.json?_=' + Date.now());
+    const data = await res.json();
+    records = data.records || [];
+    generatedAt = data.generatedAt || null;
+    document.getElementById('updated-notice').textContent = generatedAt
+      ? `最終更新：${fmtDateTime(generatedAt)}`
+      : 'データを読み込みました';
+  }catch(e){
+    document.getElementById('updated-notice').textContent = 'データの読み込みに失敗しました';
+  }
+  renderCalendar();
+}
+init();
+</script>
+</body>
+</html>
