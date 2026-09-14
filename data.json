@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T19:12:04.787797+09:00",
+  "generatedAt": "2026-09-14T15:12:04.859961+09:00",
   "records": [
     {
       "id": "Lmtje832b55alm",
@@ -920,6 +920,62 @@
       "status": "貸出中",
       "loanDate": "2026-11-29",
       "returnDate": "2026-11-29"
+    },
+    {
+      "id": "Lmu0shsitr9g0j",
+      "equipmentNo": "ビールサーバー-11",
+      "category": "ビールサーバー",
+      "status": "貸出中",
+      "loanDate": "2026-10-03",
+      "returnDate": "2026-10-04"
+    },
+    {
+      "id": "Lmu0siy0ue57gm",
+      "equipmentNo": "ビールサーバー-14",
+      "category": "ビールサーバー",
+      "status": "貸出中",
+      "loanDate": "2026-10-03",
+      "returnDate": "2026-10-04"
+    },
+    {
+      "id": "Lmu0skfv7xydy4",
+      "equipmentNo": "どぶづけ-04",
+      "category": "どぶづけ",
+      "status": "貸出中",
+      "loanDate": "2026-10-02",
+      "returnDate": "2026-10-05"
+    },
+    {
+      "id": "Lmu0skfv71428l",
+      "equipmentNo": "どぶづけ-05",
+      "category": "どぶづけ",
+      "status": "貸出中",
+      "loanDate": "2026-10-02",
+      "returnDate": "2026-10-05"
+    },
+    {
+      "id": "Lmu0slggigaq7c",
+      "equipmentNo": "どぶづけ-06",
+      "category": "どぶづけ",
+      "status": "貸出中",
+      "loanDate": "2026-10-02",
+      "returnDate": "2026-10-05"
+    },
+    {
+      "id": "Lmu0sn4r1c3pki",
+      "equipmentNo": "どぶづけ-07",
+      "category": "どぶづけ",
+      "status": "貸出中",
+      "loanDate": "2026-10-02",
+      "returnDate": "2026-10-05"
+    },
+    {
+      "id": "Lmu0so26jeyng5",
+      "equipmentNo": "どぶづけ-08",
+      "category": "どぶづけ",
+      "status": "貸出中",
+      "loanDate": "2026-10-03",
+      "returnDate": "2026-10-04"
     }
   ]
 }
