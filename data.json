@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T16:12:04.433658+09:00",
+  "generatedAt": "2026-09-16T17:12:04.662653+09:00",
   "records": [
     {
       "id": "Lmtje832b55alm",
@@ -976,6 +976,14 @@
       "status": "貸出中",
       "loanDate": "2026-10-03",
       "returnDate": "2026-10-04"
+    },
+    {
+      "id": "Lmu3rklofmtgcx",
+      "equipmentNo": "どぶづけ-07",
+      "category": "どぶづけ",
+      "status": "貸出中",
+      "loanDate": "2026-10-17",
+      "returnDate": "2026-10-17"
     }
   ]
 }
