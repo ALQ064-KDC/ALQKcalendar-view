@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-18T09:12:04.740654+09:00",
+  "generatedAt": "2026-09-18T10:12:04.166362+09:00",
   "records": [
     {
       "id": "Lmtje832b55alm",
@@ -984,6 +984,22 @@
       "status": "貸出中",
       "loanDate": "2026-10-17",
       "returnDate": "2026-10-17"
+    },
+    {
+      "id": "Lmu67m77dspf86",
+      "equipmentNo": "ビールサーバー-01",
+      "category": "ビールサーバー",
+      "status": "貸出中",
+      "loanDate": "2026-09-21",
+      "returnDate": "2026-09-23"
+    },
+    {
+      "id": "Lmu67m77d2vev0",
+      "equipmentNo": "ビールサーバー-02",
+      "category": "ビールサーバー",
+      "status": "貸出中",
+      "loanDate": "2026-09-21",
+      "returnDate": "2026-09-23"
     }
   ]
 }
